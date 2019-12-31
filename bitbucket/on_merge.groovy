@@ -37,6 +37,7 @@ void call(Map args = [:], body){
 
 String get_merged_from(){
   node{
+    sh "chmod -R u+w .git"
     unstash "workspace"
     // update remote for git name-rev to properly work
     def remote = env.GIT_URL
@@ -74,6 +75,7 @@ String get_merged_from(){
 
 String get_feature_branch_sha(){
   node{
+    sh "chmod -R u+w .git"
     unstash "workspace"
     sh(
       script: "git rev-parse \$(git --no-pager log -n1 | grep Merge: | awk '{print \$3}')",
