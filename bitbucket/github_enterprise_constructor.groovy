@@ -3,11 +3,11 @@
   This software package is licensed under the Booz Allen Public License. The license can be found in the License file or at http://boozallen.github.io/licenses/bapl
 */
 
-//@Init
+@Init
 void call(Map context) {
   node{
-      //sh "chmod -R u+w .git"
-      //unstash "workspace"
+      sh "chmod -R u+w .git"
+      unstash "workspace"
 
       env.GIT_URL = scm.getUserRemoteConfigs()[0].getUrl()
       env.GIT_CREDENTIAL_ID = scm.getUserRemoteConfigs()[0].credentialsId.toString()
