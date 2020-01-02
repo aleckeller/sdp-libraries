@@ -6,17 +6,15 @@
 @Init
 void call(Map context) {
   node{
-      sh "chmod -R u+w .git"
       unstash "workspace"
 
       env.GIT_URL = scm.getUserRemoteConfigs()[0].getUrl()
       env.GIT_CREDENTIAL_ID = scm.getUserRemoteConfigs()[0].credentialsId.toString()
-      def parts = env.GIT_URL.split(":")
+      def parts = env.GIT_URL.split("/")
       for (part in parts){
           parts = parts.drop(1)
           if (part.contains(".")) break
       }
-      parts = parts.getAt(0).split("/")
       env.ORG_NAME = parts.getAt(0)
       env.REPO_NAME = parts[1..-1].join("/") - ".git"
       env.GIT_SHA = sh(script: "git rev-parse HEAD", returnStdout: true).trim()
