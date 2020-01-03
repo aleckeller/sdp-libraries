@@ -1,6 +1,6 @@
 
 def call(){
-    List options = ['github', 'github_enterprise']
+    List options = ['github', 'github_enterprise', 'bitbucket']
     String impl = config.source_type
 
     return options.contains(impl) ? getBinding().getStep(impl) :
