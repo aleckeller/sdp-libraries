@@ -75,9 +75,10 @@ void run_api_tests(app_env){
                     returnStdout: true
                 )
                 sh "docker cp risk-engine-newman-container:${collection_name}-report.html ."
-                archiveArtifacts artifacts: "${collection_name}-report.html"
+                sh "zip -r ${collection_name}-report.zip ${collection_name}-report.html"
+                archiveArtifacts artifacts: "${collection_name}-report.zip"
                 echo api_results
-                echo "RESULTS FOR ${it.name} ALSO AVAILABLE HERE: ${env.BUILD_URL}artifact/${collection_name}-report.html"
+                echo "PLEASE DOWNLOAD REPORT FOR ${it.name} ALAVAILABLE HERE: ${env.BUILD_URL}artifact/${collection_name}-report.zip"
             }
         }
         catch(ex){
