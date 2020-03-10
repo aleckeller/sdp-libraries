@@ -77,7 +77,7 @@ void run_api_tests(app_env){
                 )
             }
             catch(ex){
-                println "Newman tests failed for ${it.name} with: ${ex}"
+                error("Newman tests failed for ${it.name} with: ${ex}")
             }
             finally{
                 sh "docker cp risk-engine-newman-container:${collection_name}-report.html ."
