@@ -71,7 +71,7 @@ void run_api_tests(app_env){
                 echo "Collections key not specified in config. Not using data.."
             }
             try{
-                def api_results = sh (
+                api_results = sh (
                     script: "docker exec risk-engine-newman-container ${command}",
                     returnStdout: true
                 )
