@@ -51,14 +51,14 @@ void run_api_tests(app_env){
                 echo "Running ${it.name} collection"
                 def collection_name = it.name.take(it.name.lastIndexOf('.'))
                 def command = "newman run ${collections_directory}/${it.name} --insecure -r cli,html --reporter-html-export ${collection_name}-report.html"
-                if (newman_config.env_file){
+                if (newman_config && newman_config.env_file){
                     echo "Using ${newman_config.env_file} for environment variables with ${collection_name}"
                     command += " -e collections/data/${newman_config.env_file}"
                 }
                 else{
                     echo "Env_file key not specified in config. Not using environment variables file.."
                 }
-                if (newman_config.collections){
+                if (newman_config && newman_config.collections){
                     if (newman_config.collections["$collection_name"]){
                         echo "Using ${newman_config.collections["$collection_name"]} for data with ${collection_name}"
                         command += " -d collections/data/${newman_config.collections["$collection_name"]}"
