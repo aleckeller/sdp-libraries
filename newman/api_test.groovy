@@ -43,49 +43,50 @@ void run_api_tests(app_env){
             sh "docker rm --force risk-engine-newman-container"
         }
         catch(Exception e){}
-        try{
-            sh "docker build -t risk-engine-newman-image -f Dockerfile.newman ."
-            sh "docker run --name risk-engine-newman-container -d risk-engine-newman-image tail -f /dev/null"
-            def files = findFiles(glob: "${collections_directory}/*.json")
-            files.each{
-                echo "Running ${it.name} collection"
-                def collection_name = it.name.take(it.name.lastIndexOf('.'))
-                def command = "newman run ${collections_directory}/${it.name} --insecure -r cli,htmlextra --reporter-htmlextra-export ${collection_name}-report.html"
-                if (newman_config && newman_config.env_file){
-                    echo "Using ${newman_config.env_file} for environment variables with ${collection_name}"
-                    command += " -e collections/data/${newman_config.env_file}"
+        
+        sh "docker build -t risk-engine-newman-image -f Dockerfile.newman ."
+        sh "docker run --name risk-engine-newman-container -d risk-engine-newman-image tail -f /dev/null"
+        def files = findFiles(glob: "${collections_directory}/*.json")
+        files.each{
+            echo "Running ${it.name} collection"
+            collection_name = it.name.take(it.name.lastIndexOf('.'))
+            def command = "newman run ${collections_directory}/${it.name} --insecure -r cli,htmlextra --reporter-htmlextra-export ${collection_name}-report.html"
+            if (newman_config && newman_config.env_file){
+                echo "Using ${newman_config.env_file} for environment variables with ${collection_name}"
+                command += " -e collections/data/${newman_config.env_file}"
+            }
+            else{
+                echo "Env_file key not specified in config. Not using environment variables file.."
+            }
+            if (newman_config && newman_config.collections){
+                if (newman_config.collections["$collection_name"]){
+                    echo "Using ${newman_config.collections["$collection_name"]} for data with ${collection_name}"
+                    command += " -d collections/data/${newman_config.collections["$collection_name"]}"
                 }
                 else{
-                    echo "Env_file key not specified in config. Not using environment variables file.."
+                    echo "Data CSV for ${collection_name} not specified in config. Not using data.."
                 }
-                if (newman_config && newman_config.collections){
-                    if (newman_config.collections["$collection_name"]){
-                        echo "Using ${newman_config.collections["$collection_name"]} for data with ${collection_name}"
-                        command += " -d collections/data/${newman_config.collections["$collection_name"]}"
-                    }
-                    else{
-                        echo "Data CSV for ${collection_name} not specified in config. Not using data.."
-                    }
-                }
-                else{
-                    echo "Collections key not specified in config. Not using data.."
-                }
+            }
+            else{
+                echo "Collections key not specified in config. Not using data.."
+            }
+            try{
                 def api_results = sh (
                     script: "docker exec risk-engine-newman-container ${command}",
                     returnStdout: true
                 )
             }
-        }
-        catch(ex){
-            println "Newman tests failed with: ${ex}"
-        }
-        finally{
+            catch(ex){
+                println "Newman tests failed for ${it.name} with: ${ex}"
+            }
+            finally{
                 sh "docker cp risk-engine-newman-container:${collection_name}-report.html ."
                 sh "zip -r ${collection_name}-report.zip ${collection_name}-report.html"
                 archiveArtifacts artifacts: "${collection_name}-report.zip"
                 echo api_results
                 echo "PLEASE DOWNLOAD REPORT FOR ${it.name} ALAVAILABLE HERE: ${env.BUILD_URL}artifact/${collection_name}-report.zip"
-            sh "docker rm --force risk-engine-newman-container"
+            }
         }
+        sh "docker rm --force risk-engine-newman-container"
     }
 }
